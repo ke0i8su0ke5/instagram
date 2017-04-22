@@ -8,6 +8,10 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>本アプリは、画像の投稿及び編集のため、カメラロールへのアクセスを求めます。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>本アプリは、画像の投稿及び編集のため、フォトライブラリへのアクセスを求めます。</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -31,8 +35,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 </dict>
 </plist>
