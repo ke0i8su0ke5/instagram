@@ -10,12 +10,14 @@ import UIKit
 import Firebase
 import FirebaseAuth
 import FirebaseDatabase
+import SVProgressHUD
 
 class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var tableView: UITableView!
     
     var postArray: [PostData] = []
+    var commentArray: [CommentData] = []
     
     // FIRDatabaseのobserveEventの登録状態を表す
     var observing = false
@@ -48,6 +50,7 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
             if self.observing == false {
                 // 要素が追加されたらpostArrayに追加してTableViewを再表示する
                 let postsRef = FIRDatabase.database().reference().child(Const.PostPath)
+                
                 postsRef.observe(.childAdded, with: { snapshot in
                     print("DEBUG_PRINT: .childAddedイベントが発生しました。")
                     
@@ -60,6 +63,7 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
                         self.tableView.reloadData()
                     }
                 })
+                
                 // 要素が変更されたら該当のデータをpostArrayから一度削除した後に新しいデータを追加してTableViewを再表示する
                 postsRef.observe(.childChanged, with: { snapshot in
                     print("DEBUG_PRINT: .childChangedイベントが発生しました。")
@@ -117,8 +121,11 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath as IndexPath) as! PostTableViewCell
         cell.setPostData(postData: postArray[indexPath.row])
         
-        // セル内のボタンのアクションをソースコードで設定する
+        // セル内の「like」ボタンのアクションをソースコードで設定する
         cell.likeButton.addTarget(self, action:#selector(handleButton(sender:event:)), for:  UIControlEvents.touchUpInside)
+        
+        // セル内の「コメント」ボタンのアクションをソースコードで設定する
+        cell.commentPostButton.addTarget(self, action: #selector(handleCommentPostButton(sender:event:)), for: UIControlEvents.touchUpInside)
         
         return cell
     }
@@ -168,5 +175,45 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
             postRef.updateChildValues(likes)
             
         }
+    }
+    
+    func handleCommentPostButton(sender: UIButton, event:UIEvent) {
+        print("DEBUG_PRINT: コメントボタンがタップされました。")
+        
+        // タップされたセルのインデックスのデータを取り出す
+        let touch = event.allTouches?.first
+        let point = touch!.location(in: self.tableView)
+        let indexPath = tableView.indexPathForRow(at: point)
+        
+        // 配列からタップされたインデックスのデータを取り出す
+        let postData = postArray[indexPath!.row]
+
+        // 入力されたコメントを取り出す
+        var inputComment = ""
+        if let cell = tableView.cellForRow(at: indexPath!) as? PostTableViewCell {
+            inputComment = cell.commentTextField.text!
+            if inputComment.isEmpty {
+                SVProgressHUD.showError(withStatus: "コメントを入力して下さい")
+                return
+            }
+        }
+
+        // postDataに必要な情報を取得しておく
+        let name = FIRAuth.auth()?.currentUser?.displayName
+        
+        // 辞書を作成してFirebaseに保存する
+        if postData.isCommented {
+            postData.comments[name!] = inputComment
+        } else {
+            postData.comments.updateValue(inputComment, forKey: name!)
+        }
+        
+        // 入力されたコメントをFirebaseに保存する
+        let postRef = FIRDatabase.database().reference().child(Const.PostPath).child(postData.id!)
+        
+        //let comments = ["comments": [name!: inputComment]]
+        let comments = ["comments": postData.comments]
+        postRef.updateChildValues(comments)
+        SVProgressHUD.showSuccess(withStatus: "コメントを投稿しました")
     }
 }
