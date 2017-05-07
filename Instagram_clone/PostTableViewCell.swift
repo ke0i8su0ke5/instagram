@@ -55,9 +55,15 @@ class PostTableViewCell: UITableViewCell {
         }
         
         if postData.comments.isEmpty == false {
+            var tempComment: String = ""
             for comments in postData.comments {
-                self.commentLabel.text = "\(comments.key) : \(comments.value)"
+                if tempComment != "" {
+                    tempComment = tempComment + "\n\(comments.key) : \(comments.value)"
+                } else {
+                    tempComment = "\(comments.key) : \(comments.value)"
+                }
             }
+            self.commentLabel.text = tempComment
         } else {
             self.commentLabel.text = ""
         }

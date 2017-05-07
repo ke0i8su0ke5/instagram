@@ -16,8 +16,7 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
 
     @IBOutlet weak var tableView: UITableView!
     
-    var postArray: [PostData] = []
-    var commentArray: [CommentData] = []
+    var postArray: [PostData] = []    
     
     // FIRDatabaseのobserveEventの登録状態を表す
     var observing = false
